@@ -128,6 +128,9 @@ class CreateStoryActivity : AppCompatActivity() {
                 }
             }
         }
+        else {
+            Toast.makeText(this@CreateStoryActivity, "Silakan masukkan berkas gambar terlebih dahulu.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun startTakePhoto() {
