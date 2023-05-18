@@ -2,16 +2,13 @@ package com.example.storyapp.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
-import com.example.storyapp.data.remote.response.ListStoryItem
 import com.example.storyapp.data.remote.response.LoginResponse
 import com.example.storyapp.data.remote.response.RegisterResponse
 import com.example.storyapp.data.remote.response.StoryResponse
 import com.example.storyapp.data.remote.retrofit.ApiService
-import com.example.storyapp.utils.Preferences
 import com.example.storyapp.utils.Result
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import kotlin.math.log
 
 class DataRepository(private val apiService: ApiService) {
 
