@@ -6,6 +6,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
 class CreateStoryViewModel(private val repository: DataRepository): ViewModel() {
-    fun createStory(file: MultipartBody.Part, token: String, description: RequestBody) = repository.createStory(file, token, description)
+    fun createStory(file: MultipartBody.Part, token: String, description: RequestBody, lat: Double?, lon: Double?) = repository.createStory(file, token, description, lat, lon)
 
 }

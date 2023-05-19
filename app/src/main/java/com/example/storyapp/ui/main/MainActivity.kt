@@ -1,12 +1,11 @@
 package com.example.storyapp.ui.main
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,8 +15,8 @@ import com.example.storyapp.databinding.ActivityMainBinding
 import com.example.storyapp.ui.create.CreateStoryActivity
 import com.example.storyapp.ui.detail.DetailActivity
 import com.example.storyapp.ui.login.LoginActivity
+import com.example.storyapp.ui.maps.MapsActivity
 import com.example.storyapp.utils.Preferences
-import com.example.storyapp.utils.Result
 import com.example.storyapp.utils.UserModel
 import com.example.storyapp.utils.ViewModelFactory
 
@@ -27,6 +26,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var preferences: Preferences
     private var token: String = ""
     private lateinit var userModel: UserModel
+    private lateinit var layoutManager: LinearLayoutManager
+    private var isFirstLoad = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity,
             viewModelFactory
         )[MainViewModel::class.java]
-        val layoutManager = LinearLayoutManager(this@MainActivity)
+        layoutManager = LinearLayoutManager(this@MainActivity)
         binding.listStory.layoutManager = layoutManager
         binding.listStory.setHasFixedSize(true)
         val itemDecoration = DividerItemDecoration(this, layoutManager.orientation)
@@ -55,37 +56,38 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(EXTRA_TOKEN, token)
             startActivity(intent)
         }
-
+        isFirstLoad = true
         getAllStory()
     }
 
     private fun getAllStory() {
         Log.i("token", token)
-        mainViewModel.getStory(token).observe(this) {
-            when (it) {
-                is Result.Success -> {
-                    val listStoriesAdapter = StoryAdapter(it.data.listStory)
-                    binding.listStory.adapter = listStoriesAdapter
-                    listStoriesAdapter.setOnItemClickListener(object : StoryAdapter.OnItemClickListener{
-                        override fun onItemClick(data: ListStoryItem) {
-                            val intentDetail = Intent(this@MainActivity, DetailActivity::class.java)
-                            intentDetail.putExtra(DetailActivity.EXTRA_USERNAME, data.name)
-                            intentDetail.putExtra(DetailActivity.EXTRA_PHOTO, data.photoUrl)
-                            intentDetail.putExtra(DetailActivity.EXTRA_DESCRIPTION, data.description)
-                            startActivity(intentDetail)
-                        }
-                    })
-                }
-                is Result.Error -> {
-                    Toast.makeText(this@MainActivity, it.error, Toast.LENGTH_LONG).show()
-                }
+        val adapter = StoryAdapter()
+        binding.listStory.adapter = adapter.withLoadStateFooter(
+            footer = LoadingStateAdapter {
+                adapter.retry()
             }
-
+        )
+        mainViewModel.getStory(token).observe(this){
+            adapter.submitData(lifecycle, it)
+            if (isFirstLoad) {
+                layoutManager.scrollToPositionWithOffset(0, 0)
+                isFirstLoad = false
+            }
+            adapter.setOnItemClickListener(object : StoryAdapter.OnItemClickListener{
+                override fun onItemClick(data: ListStoryItem) {
+                    val intentDetail = Intent(this@MainActivity, DetailActivity::class.java)
+                    intentDetail.putExtra(DetailActivity.EXTRA_USERNAME, data.name)
+                    intentDetail.putExtra(DetailActivity.EXTRA_PHOTO, data.photoUrl)
+                    intentDetail.putExtra(DetailActivity.EXTRA_DESCRIPTION, data.description)
+                    startActivity(intentDetail)
+                }
+            })
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.option_menu, menu)!!
+        menuInflater.inflate(R.menu.option_menu, menu)
         return true
     }
 
@@ -96,6 +98,12 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 startActivity(intent)
                 finish()
+                true
+            }
+            R.id.btn_location -> {
+                val intent = Intent(this@MainActivity, MapsActivity::class.java)
+                intent.putExtra(EXTRA_TOKEN, token)
+                startActivity(intent)
                 true
             }
             else -> true

@@ -2,19 +2,15 @@ package com.example.storyapp.ui.login
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.example.storyapp.data.remote.response.LoginResponse
 import com.example.storyapp.databinding.ActivityLoginBinding
 import com.example.storyapp.ui.main.MainActivity
 import com.example.storyapp.ui.register.RegisterActivity

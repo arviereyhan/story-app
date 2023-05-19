@@ -18,4 +18,9 @@
     <string name="photo">Photo</string>
     <string name="gallery">Gallery</string>
     <string name="submit">SUBMIT</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="favorite">Favorite</string>
+    <string name="location">Location</string>
+    <string name="retry">Coba lagi</string>
+    <string name="gunakan_lokasi_terakhir">Gunakan lokasi terakhir</string>
 </resources>

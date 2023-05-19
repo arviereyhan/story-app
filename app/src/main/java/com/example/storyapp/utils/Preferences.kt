@@ -1,7 +1,6 @@
 package com.example.storyapp.utils
 
 import android.content.Context
-import com.example.storyapp.data.remote.response.LoginResponse
 
 internal class Preferences(context: Context) {
     companion object{

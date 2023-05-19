@@ -5,7 +5,14 @@
     <item
         android:id="@+id/btn_logout"
         android:icon="@drawable/ic_baseline_logout_24"
-        android:title="Favorite"
+        android:title="@string/favorite"
         app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/btn_location"
+        android:icon="@drawable/ic_baseline_location_on_24"
+        android:title="@string/location"
+        app:showAsAction="ifRoom"/>
+
 
 </menu>

@@ -1,9 +1,8 @@
 package com.example.storyapp.ui.detail
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-import com.example.storyapp.R
 import com.example.storyapp.databinding.ActivityDetailBinding
 
 class DetailActivity : AppCompatActivity() {

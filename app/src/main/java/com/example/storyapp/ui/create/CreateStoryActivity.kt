@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -21,6 +22,8 @@ import com.example.storyapp.utils.Result
 import com.example.storyapp.utils.ViewModelFactory
 import com.example.storyapp.utils.createCustomTempFile
 import com.example.storyapp.utils.uriToFile
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -32,6 +35,7 @@ class CreateStoryActivity : AppCompatActivity() {
     private var getFile: File? = null
     private var token: String = ""
     private lateinit var createStoryViewModel: CreateStoryViewModel
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private lateinit var binding: ActivityCreateStoryBinding
 
@@ -61,6 +65,7 @@ class CreateStoryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCreateStoryBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         val viewModelFactory = ViewModelFactory.getInstance(this)
         createStoryViewModel = ViewModelProvider(
@@ -81,10 +86,10 @@ class CreateStoryActivity : AppCompatActivity() {
 
         binding.btnPhoto.setOnClickListener { startTakePhoto() }
         binding.btnGallery.setOnClickListener { startGallery() }
-        binding.btnSubmit.setOnClickListener { uploadImage() }
+        binding.btnSubmit.setOnClickListener { currentLocation() }
     }
 
-    private fun uploadImage() {
+    private fun uploadImage(location: Location) {
         if (getFile != null){
             val file = reduceFileImage(getFile as File)
 
@@ -97,7 +102,16 @@ class CreateStoryActivity : AppCompatActivity() {
                 requestImageFile
             )
 
-            createStoryViewModel.createStory(imageMultipart, token, description).observe(this){
+            var lat: Double? = null
+            var lon: Double? = null
+
+            val myCheckBox = binding.cbLocation
+            if (myCheckBox.isChecked){
+                lat = location.latitude
+                lon = location.longitude
+            }
+            Log.i("Latitude", lat.toString())
+            createStoryViewModel.createStory(imageMultipart, token, description, lat, lon ).observe(this){
                 when{
                     mDescription.isEmpty() -> {
                         binding.descriptionEditText.error = "Input Your Email"
@@ -121,6 +135,57 @@ class CreateStoryActivity : AppCompatActivity() {
         }
         else {
             Toast.makeText(this@CreateStoryActivity, "Silakan masukkan berkas gambar terlebih dahulu.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+    private val requestPermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) {  permissions ->
+            when {
+                permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false -> {
+                    // Precise location access granted.
+                    currentLocation()
+                }
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false -> {
+                    // Only approximate location access granted.
+                    currentLocation()
+                }
+                else -> {
+                    // No location access granted.
+                }
+            }
+        }
+
+    private fun checkPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+    private fun currentLocation() {
+        if     (checkPermission(Manifest.permission.ACCESS_FINE_LOCATION) &&
+            checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+        ){
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    uploadImage(location)
+                } else {
+                    Toast.makeText(
+                        this@CreateStoryActivity,
+                        "Location is not found. Try Again",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        } else {
+            requestPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
         }
     }
 
